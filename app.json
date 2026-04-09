@@ -1,7 +1,50 @@
 {
   "expo": {
-    "name": "archiprop",
+    "name": "ArchiProp",
     "slug": "archiprop",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0D1117"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.archiprop.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ArchiProp uses the camera to display AR building models overlaid on the real world.",
+        "NSLocationWhenInUseUsageDescription": "ArchiProp uses your location to position 3D building models at their real-world GPS coordinates.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "ArchiProp uses your location to position 3D building models at their real-world GPS coordinates.",
+        "NSMotionUsageDescription": "ArchiProp uses device motion to orient AR building models correctly."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D1117"
+      },
+      "package": "com.archiprop.app",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ArchiProp uses the camera to display AR building models and scan QR codes."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "ArchiProp uses your location to place 3D building models at their real-world GPS coordinates."
+        }
+      ]
+    ],
+    "scheme": "archiprop"
   }
 }
