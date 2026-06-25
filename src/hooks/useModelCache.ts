@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
-import * as FileSystem from 'expo-file-system';
+// expo-file-system v19 (SDK 54) moved the classic download/cache API to the
+// legacy entry point. This preserves cacheDirectory / createDownloadResumable.
+import * as FileSystem from 'expo-file-system/legacy';
 import { useARStore } from '@/store/arStore';
 
 const CACHE_DIR = FileSystem.cacheDirectory + 'models/';

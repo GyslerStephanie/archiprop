@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Button, Input } from '@/components/ui';
 import { colors, spacing, radius, typography } from '@/theme';
 import { useAuthStore } from '@/store/authStore';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 function LogoMark({ size = 56 }: { size?: number }) {
   const sq = size * 0.4;
@@ -43,13 +44,38 @@ export function LoginScreen() {
     }
     setLoading(true);
     try {
-      // TODO: replace with real Supabase auth
-      // const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      // For now, mock login for development
-      await new Promise((r) => setTimeout(r, 800));
-      setUser({ id: 'mock-user-id', email });
+      // Demo mode: no backend configured, mock a login so the app is usable.
+      if (!isSupabaseConfigured || !supabase) {
+        await new Promise((r) => setTimeout(r, 800));
+        setUser({ id: 'mock-user-id', email });
+        return;
+      }
+
+      if (isRegister) {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          Alert.alert('Sign up failed', error.message);
+          return;
+        }
+        // With email confirmation on, there's a user but no session yet.
+        if (data.user && !data.session) {
+          Alert.alert(
+            'Confirm your email',
+            'We sent you a confirmation link. Verify your email, then sign in.'
+          );
+          setIsRegister(false);
+        }
+        // Otherwise onAuthStateChange picks up the new session automatically.
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          Alert.alert('Sign in failed', error.message);
+          return;
+        }
+        // Session is applied via the onAuthStateChange listener in useAuthSession.
+      }
     } catch (err) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

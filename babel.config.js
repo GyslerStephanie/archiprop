@@ -12,7 +12,7 @@ module.exports = function (api) {
           },
         },
       ],
-      'react-native-reanimated/plugin', // must be last
+      // Reanimated v4's worklets plugin is injected automatically by babel-preset-expo (SDK 54).
     ],
   };
 };

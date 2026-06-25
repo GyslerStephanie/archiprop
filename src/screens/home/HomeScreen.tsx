@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Dimensions,
+  Alert,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,49 +15,12 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import { Header } from '@/components/ui';
 import { colors, spacing, radius, typography } from '@/theme';
 import type { HomeStackParams } from '@/navigation/types';
-import { useARStore } from '@/store/arStore';
+import { useARStore, type Project } from '@/store/arStore';
+import { useProjects } from '@/hooks/useProjects';
+import { useAuthStore } from '@/store/authStore';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 const { height } = Dimensions.get('window');
-
-// Demo project sites in Zurich
-const DEMO_PROJECTS = [
-  {
-    id: 'proj-001',
-    name: 'Hardbrücke Tower',
-    architect: 'Studio Zurich',
-    status: 'planning' as const,
-    anchorLat: 47.3853,
-    anchorLng: 8.5237,
-    anchorElevation: 0,
-    ifcNorthOffset: 0,
-    modelUrl: '', // Will be filled with Supabase URL
-    qrToken: 'AP-001',
-  },
-  {
-    id: 'proj-002',
-    name: 'Langstrasse Residenz',
-    architect: 'Architektur AG',
-    status: 'under_construction' as const,
-    anchorLat: 47.3779,
-    anchorLng: 8.5282,
-    anchorElevation: 0,
-    ifcNorthOffset: 15,
-    modelUrl: '',
-    qrToken: 'AP-002',
-  },
-  {
-    id: 'proj-003',
-    name: 'Zürich West Pavilion',
-    architect: 'Herzog & de Meuron',
-    status: 'complete' as const,
-    anchorLat: 47.3876,
-    anchorLng: 8.5196,
-    anchorElevation: 0,
-    ifcNorthOffset: 0,
-    modelUrl: '',
-    qrToken: 'AP-003',
-  },
-];
 
 const DARK_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#1a1f2e' }] },
@@ -76,7 +40,27 @@ export function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
   const { setActiveProject } = useARStore();
+  const { data: projects = [] } = useProjects();
+  const setUser = useAuthStore((s) => s.setUser);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleSignOut = () => {
+    Alert.alert('Sign out', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign out',
+        style: 'destructive',
+        onPress: async () => {
+          if (isSupabaseConfigured && supabase) {
+            await supabase.auth.signOut();
+            // onAuthStateChange clears the user.
+          } else {
+            setUser(null);
+          }
+        },
+      },
+    ]);
+  };
 
   const handleStart = () => {
     navigation.navigate('QRScan');
@@ -86,19 +70,19 @@ export function HomeScreen() {
     setSelectedId(projectId === selectedId ? null : projectId);
   };
 
-  const handleProjectAR = (project: typeof DEMO_PROJECTS[0]) => {
+  const handleProjectAR = (project: Project) => {
     setActiveProject(project);
     navigation.navigate('QRScan');
   };
 
-  const selectedProject = DEMO_PROJECTS.find((p) => p.id === selectedId);
+  const selectedProject = projects.find((p) => p.id === selectedId);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <Header showProfile onProfile={() => {}} />
+      <Header showProfile onProfile={handleSignOut} />
 
       {/* Get started section */}
       <View style={styles.section}>
@@ -135,7 +119,7 @@ export function HomeScreen() {
             longitudeDelta: 0.04,
           }}
         >
-          {DEMO_PROJECTS.map((project) => (
+          {projects.map((project) => (
             <Marker
               key={project.id}
               coordinate={{ latitude: project.anchorLat, longitude: project.anchorLng }}

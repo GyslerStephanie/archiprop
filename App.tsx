@@ -6,8 +6,21 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootNavigator } from '@/navigation/RootNavigator';
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthStore } from '@/store/authStore';
 
 const queryClient = new QueryClient();
+
+function Root() {
+  // Restore persisted session and subscribe to auth changes.
+  useAuthSession();
+  const initialized = useAuthStore((s) => s.initialized);
+
+  // Avoid flashing the onboarding screen before the session is restored.
+  if (!initialized) return null;
+
+  return <RootNavigator />;
+}
 
 export default function App() {
   return (
@@ -28,7 +41,7 @@ export default function App() {
             }}
           >
             <StatusBar barStyle="light-content" backgroundColor="#0D1117" />
-            <RootNavigator />
+            <Root />
           </NavigationContainer>
         </QueryClientProvider>
       </SafeAreaProvider>

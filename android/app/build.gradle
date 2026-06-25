@@ -89,7 +89,7 @@ android {
 
     namespace "com.archiprop"
     defaultConfig {
-        applicationId "com.archiprop"
+        applicationId "com.archiprop.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
